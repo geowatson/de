@@ -1,0 +1,47 @@
+* {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+html,
+body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue";
+}
+
+/* block section */
+
+.left {
+    position: absolute;
+    padding: 10px;
+}
+
+.main {
+    margin: 0 auto;
+    width: 75%;
+    height: 100%;
+}
+
+/* detail section */
+
+.controllers {
+    padding-top: 15px;
+}
+
+.left > h1 {
+    font-size: 15px;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+.left > h2 {
+    display: inline-block;
+    font-size: 13px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-right: 5px;
+    white-space: nowrap;
+}

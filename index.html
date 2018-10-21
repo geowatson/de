@@ -2,10 +2,27 @@
 <html>
 <head>
     <title></title>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-    <canvas id="myChart" width="400" height="400"></canvas>
-    <script type="module" src="./script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+    <div class="left">
+        <h1>Some info:</h1>
+        <h2>N =</h2><h2 id="N">10</h2><br>
+        <h2>h =</h2><h2 id="h">10</h2><br>
+    </div>
+    <div class="main">
+        <div class="graph">
+            <canvas id="chart"></canvas>
+        </div>
+        <div class="controllers">
+            <input title="delta" type="range" min="0.003" max="1" step="0.001" value="0.01" onchange="onDeltaChange(value)">
+            <input type="text" placeholder="Here" onchange="">
+            <input id="euler" type="radio" name="method" value="euler" onclick="onMethodChange(value)" checked="checked"><label for="euler">Euler method</label>
+            <input id="improvedEuler" type="radio" name="method" value="improvedEuler" onclick="onMethodChange(value)"><label for="improvedEuler">Improved Euler method</label>
+            <input id="rungeKutta" type="radio" name="method" value="rungeKutta" onclick="onMethodChange(value)"><label for="rungeKutta">Runge-Kutta method</label>
+        </div>
+    </div>
+    <script src="chart.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
