@@ -126,7 +126,7 @@ function init(funct, x0, y0, x1, h) {
                 fill: false,
             }, {
                 data: Exact,
-                borderColor: "red",
+                borderColor: "#ff0000",
                 label: "Exact",
                 fill: false,
             },
@@ -187,10 +187,11 @@ graph.onwheel = (something) => {
     let yMax = chart.scales["y-axis-0"].max;
     let xMin = chart.scales["x-axis-0"].min;
     let xMax = chart.scales["x-axis-0"].max;
-    let centerElemY = (graph.getBoundingClientRect().top + chart.chartArea.bottom - chart.chartArea.top) / 2;
-    let centerElemX = (graph.getBoundingClientRect().left + chart.chartArea.right - chart.chartArea.left) / 2;
-    let cursorDeltaY = 2 * (something.clientY - chart.chartArea.top - centerElemY) / (chart.chartArea.bottom - chart.chartArea.top);
-    let cursorDeltaX = 2 * (something.clientX - chart.chartArea.left - centerElemX) / (chart.chartArea.right - chart.chartArea.left);
+    let centerElemY = (chart.chartArea.bottom - chart.chartArea.top) / 2;
+    let centerElemX = (chart.chartArea.right - chart.chartArea.left) / 2;
+    let cursorDeltaY = 2 * (something.clientY - graph.getBoundingClientRect().top - chart.chartArea.top - centerElemY) / (chart.chartArea.bottom - chart.chartArea.top);
+    let cursorDeltaX = 2 * (something.clientX - graph.getBoundingClientRect().left - chart.chartArea.left - centerElemX) / (chart.chartArea.right - chart.chartArea.left);
+
 
     let d = something.deltaY;
     let cf = 0.001;
@@ -239,5 +240,5 @@ graph.onwheel = (something) => {
 
     chart.update();
 
-    // console.log(yMin, yMax, xMin, xMax);
+    console.log(cursorDeltaX, cursorDeltaY);
 };
