@@ -1,11 +1,11 @@
-let graph = document.getElementsByClassName("graph")[0];
+let graph = document.getElementById("chart");
 
 let chart, xAxis, yAxis, yExact;
 let x0 = 1, x1 = 5, y0 = 0.5, h = 0.01;
 let method = "euler";
 
 function f(x, y) {
-    return (x ** 3) * (y ** 4)  - y / x;
+    return (x ** 3) * (y ** 4) - y / x;
 }
 
 function exact(x) {
@@ -37,7 +37,7 @@ function redraw() {
 
     let Numerical = [];
     let Exact = [];
-    xAxis.forEach(function(value, index, array) {
+    xAxis.forEach(function(value, index) {
         Numerical.push({x: value, y: yAxis[index]});
         Exact.push({x: value, y: yExact[index]});
     });
@@ -104,7 +104,7 @@ function init(funct, x0, y0, x1, h) {
     }
     let Numerical = [];
     let Exact = [];
-    xAxis.forEach(function(value, index, array) {
+    xAxis.forEach(function(value, index) {
         Numerical.push({x: value, y: yAxis[index]});
         Exact.push({x: value, y: yExact[index]});
     });
@@ -115,7 +115,20 @@ function init(funct, x0, y0, x1, h) {
     //     console.log(value - yExact[index]);
     // });
 
-    chart = new Chart(document.getElementById("chart"), {
+    chart = initChart(graph, Numerical, Exact);
+}
+
+init(f, x0, y0, x1, h);
+
+graph.style.height = (0.89 * window.innerHeight).toString() + "px";
+
+window.onresize = () => {
+    graph.style.height = (0.89 * window.innerHeight).toString() + "px";
+};
+
+
+function initChart(g, Numerical, Exact) {
+    chart = new Chart(g, {
         type: 'line',
         data: {
             labels: xAxis,
@@ -158,87 +171,94 @@ function init(funct, x0, y0, x1, h) {
                     type: "linear",
                     position: "bottom",
                     ticks: {
-
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 }],
                 yAxes: [{
                     type: "linear",
                     ticks: {
-
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 }]
             }
         },
     });
+
+    g.onwheel = (elem) => {
+        // Magical constant
+        let k = 1.000004;
+        let d = elem.deltaY;
+        let width = (chart.chartArea.right - chart.chartArea.left);
+        let height = (chart.chartArea.bottom - chart.chartArea.top);
+
+        let newHeightFragment = (1 - 1 / Math.sqrt(k));
+        let newWidthFragment = (1 - 1 / Math.sqrt(k));
+
+        let L = newWidthFragment * (elem.clientX - graph.getBoundingClientRect().left - chart.chartArea.left);
+        let R = newWidthFragment * width - L;
+        let T = newHeightFragment * (elem.clientY - graph.getBoundingClientRect().top - chart.chartArea.top);
+        let B = newHeightFragment * height - T;
+
+        rescaleChart(chart, elem, L, R, T, B, d);
+    };
+
+    g.onmousedown = (a) => {
+        let prevX = a.clientX;
+        let prevY = a.clientY;
+
+        g.onmousemove = (elem) => {
+            let currX = elem.clientX;
+            let currY = elem.clientY;
+
+            // Magical constant
+            let k = 1.000004;
+
+            let L = Math.sqrt(k) * (elem.clientX - prevX);
+            let R = L;
+            let T = Math.sqrt(k) * (elem.clientY - prevY);
+            let B = T;
+
+            rescaleChart(chart, elem, -L, R, -T, B, 0.001);
+            prevX = currX;
+            prevY = currY;
+        };
+
+        g.onmouseup = () => {
+            g.onmousemove = null;
+        };
+    };
+
+    return chart;
 }
 
-init(f, x0, y0, x1, h);
+function rescaleChart(chart, elem, L, R, T, B, d) {
 
-graph.style.height = (0.89 * window.innerHeight).toString() + "px";
-
-window.onresize = () => {
-    graph.style.height = (0.89 * window.innerHeight).toString() + "px";
-};
-
-graph.onwheel = (something) => {
-    // chart.options.scales.yAxes[0].ticks.min = -1;
-    // console.log(chart.options.scales.yAxes[0].ticks.min);
+    let dF = 1, dR = 1;
     let yMin = chart.scales["y-axis-0"].min;
     let yMax = chart.scales["y-axis-0"].max;
     let xMin = chart.scales["x-axis-0"].min;
     let xMax = chart.scales["x-axis-0"].max;
-    let centerElemY = (chart.chartArea.bottom - chart.chartArea.top) / 2;
-    let centerElemX = (chart.chartArea.right - chart.chartArea.left) / 2;
-    let cursorDeltaY = 2 * (something.clientY - graph.getBoundingClientRect().top - chart.chartArea.top - centerElemY) / (chart.chartArea.bottom - chart.chartArea.top);
-    let cursorDeltaX = 2 * (something.clientX - graph.getBoundingClientRect().left - chart.chartArea.left - centerElemX) / (chart.chartArea.right - chart.chartArea.left);
-
-
-    let d = something.deltaY;
-    let cf = 0.001;
-    let topOffset, botOffset, leftOffset, rightOffset;
-    let dF, dR;
-    if (cursorDeltaY > 0) {
-        cursorDeltaY = Math.min(1, cursorDeltaY);
-        topOffset = 1 - cursorDeltaY;
-        botOffset = cursorDeltaY;
-    }
-    else {
-        cursorDeltaY = -1 * Math.max(-1, cursorDeltaY);
-        topOffset = cursorDeltaY;
-        botOffset = 1 - cursorDeltaY;
-    }
-    if (cursorDeltaX > 0) {
-        cursorDeltaX = Math.min(1, cursorDeltaX);
-        leftOffset = cursorDeltaX;
-        rightOffset = 1 - cursorDeltaX;
-    }
-    else {
-        cursorDeltaX = -1 * Math.max(-1, cursorDeltaX);
-        leftOffset = 1 - cursorDeltaX;
-        rightOffset = cursorDeltaX;
-    }
-    // console.log(chart.options.scales.yAxes[0].ticks);
 
     if (chart.options.scales.yAxes[0].ticks.min === undefined) {
         dF = (yMax - yMin);
         dR = (xMax - xMin);
-        chart.options.scales.yAxes[0].ticks.min = yMin + cf * d * dF * topOffset;
-        chart.options.scales.yAxes[0].ticks.max = yMax - cf * d * dF * botOffset;
-        chart.options.scales.xAxes[0].ticks.min = xMin + cf * d * dR * leftOffset;
-        chart.options.scales.xAxes[0].ticks.max = xMax - cf * d * dR * rightOffset;
+
+        chart.options.scales.xAxes[0].ticks.min = xMin + L * dR * d;
+        chart.options.scales.xAxes[0].ticks.max = xMax - R * dR * d;
+        chart.options.scales.yAxes[0].ticks.min = yMin + B * dF * d;
+        chart.options.scales.yAxes[0].ticks.max = yMax - T * dF * d;
     }
     else {
         dF = (chart.options.scales.yAxes[0].ticks.max - chart.options.scales.yAxes[0].ticks.min);
         dR = (chart.options.scales.xAxes[0].ticks.max - chart.options.scales.xAxes[0].ticks.min);
-        let k = (chart.chartArea.bottom - something.clientY) / (chart.chartArea.right - something.clientX);
 
-        chart.options.scales.xAxes[0].ticks.min += cf * d * dR * leftOffset;
-        chart.options.scales.xAxes[0].ticks.max -= cf * d * dR * rightOffset;
-        chart.options.scales.yAxes[0].ticks.min += cf * d * dF * topOffset;
-        chart.options.scales.yAxes[0].ticks.max -= cf * d * dF * botOffset;
+        chart.options.scales.xAxes[0].ticks.min += L * dR * d;
+        chart.options.scales.xAxes[0].ticks.max -= R * dR * d;
+        chart.options.scales.yAxes[0].ticks.min += B * dF * d;
+        chart.options.scales.yAxes[0].ticks.max -= T * dF * d;
     }
 
     chart.update();
-
-    console.log(cursorDeltaX, cursorDeltaY);
-};
+}
