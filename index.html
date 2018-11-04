@@ -6,20 +6,31 @@
 </head>
 <body>
     <div class="left">
-        <h1>Some info:</h1>
-        <h2>N =</h2><h2 id="N"></h2><br>
-        <h2>h =</h2><h2 id="h"></h2><br>
+        <div class="text bold">Settings</div><br>
+        <div class="text">N =</div><div class="text" id="N"></div><br>
+        <div class="text">h =</div><input title="Scroll this or change value manually" class="text scrollable" id="h" placeholder="Num" onchange="onDeltaChange(value)"><br>
+        <div class="controllers">
+            <label class="container">
+                <input id="euler" type="radio" name="method" value="euler" onclick="onMethodChange(value)" checked="checked">
+                <span class="checkmark"></span>
+                Euler method
+            </label>
+            <label class="container">
+                <input id="improvedEuler" type="radio" name="method" value="improvedEuler" onclick="onMethodChange(value)">
+                <span class="checkmark"></span>
+                Imp. Euler method
+            </label>
+            <label class="container">
+                <input id="rungeKutta" type="radio" name="method" value="rungeKutta" onclick="onMethodChange(value)">
+                <span class="checkmark"></span>
+                Runge-Kutta method
+            </label>
+            <button class="switcher" id="switcher">Show Error Plot</button>
+        </div>
     </div>
     <div class="main">
         <div class="graph">
             <canvas id="chart"></canvas>
-        </div>
-        <div class="controllers">
-            <input title="delta" type="range" min="0.003" max="1" step="0.001" value="0.01" onchange="onDeltaChange(value)">
-            <input type="text" placeholder="Here" onchange="">
-            <input id="euler" type="radio" name="method" value="euler" onclick="onMethodChange(value)" checked="checked"><label for="euler">Euler method</label>
-            <input id="improvedEuler" type="radio" name="method" value="improvedEuler" onclick="onMethodChange(value)"><label for="improvedEuler">Improved Euler method</label>
-            <input id="rungeKutta" type="radio" name="method" value="rungeKutta" onclick="onMethodChange(value)"><label for="rungeKutta">Runge-Kutta method</label>
         </div>
     </div>
     <script src="chart.js"></script>

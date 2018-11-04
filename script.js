@@ -1,4 +1,5 @@
 let method = "euler";
+let plot = "solution";
 let deltas = [0, 11 / 3];
 let x0 = 1, x1 = 5, y0 = 0.5, h = 0.01;
 
@@ -15,15 +16,28 @@ function exact(x) {
 
 function onDeltaChange(val) {
     h = Number(val);
-    redraw();
+    redraw(plot);
 }
 
 function onMethodChange(val) {
     method = val;
-    redraw();
+    redraw(plot);
 }
 
-function redraw() {
+document.getElementById("switcher").onclick = (elem) => {
+    if (plot === "solution") {
+        plot = "error";
+        document.getElementById("switcher").innerText = "Show Solution Plot";
+        redraw(plot);
+    }
+    else {
+        plot = "solution";
+        document.getElementById("switcher").innerText = "Show Error Plot";
+        redraw(plot);
+    }
+};
+
+function redraw(plot) {
     let N = Math.floor((x1 - x0) / h).toString();
     xAxis = defineX(x0, x1, h);
     yAxis = defineY(f, y0, xAxis, h);
@@ -38,15 +52,32 @@ function redraw() {
 
     let Numerical = [];
     let Exact = [];
+    let Error = [];
     xAxis.forEach(function(value, index) {
         Numerical.push({x: value, y: yAxis[index]});
         Exact.push({x: value, y: yExact[index]});
     });
 
-    chart.data.datasets[0].data = Numerical;
-    chart.data.datasets[1].data = Exact;
     document.getElementById("N").innerText = N;
     document.getElementById("h").innerText = h;
+
+    if (plot === "solution") {
+        chart.data.datasets[0].data = Numerical;
+        delete chart.data.datasets[1].hidden;
+        chart.data.datasets[1].data = Exact;
+        chart.data.datasets[0].label = "Numerical";
+    }
+    else {
+        Error = [];
+
+        xAxis.forEach(function(value, index) {
+            Error.push({x: value, y: Math.abs(yExact[index] - yAxis[index])});
+        });
+
+        chart.data.datasets[0].data = Error;
+        chart.data.datasets[1].hidden = "true";
+        chart.data.datasets[0].label = "Error";
+    }
 
     chart.update();
 }
@@ -113,7 +144,7 @@ function init(funct, x0, y0, x1, h) {
     yAxis = defineY(funct, y0, xAxis, h);
     yExact = xAxis.map(x => exact(x)).filter(Boolean);
     document.getElementById("N").innerText = Math.floor((x1 - x0) / h).toString();
-    document.getElementById("h").innerText = h;
+    document.getElementById("h").value = h;
 
     if (yAxis.length > yExact.length) {
         yAxis.splice(yExact.length - 1, yAxis.length - yExact.length);
@@ -129,12 +160,6 @@ function init(funct, x0, y0, x1, h) {
         Exact.push({x: value, y: yExact[index]});
     });
 
-    // error function
-    //
-    // yAxis.forEach(function (value, index, array) {
-    //     console.log(value - yExact[index]);
-    // });
-
     chart = initChart(graph, Numerical, Exact);
     chart.options.scales.yAxes[0].ticks.min = -1.5;
     chart.options.scales.yAxes[0].ticks.max = 1.5;
@@ -147,7 +172,7 @@ function initChart(g, Numerical, Exact) {
             labels: xAxis,
             datasets: [{
                 data: Numerical,
-                borderColor: "#3e95cd",
+                borderColor: "#4090c8",
                 label: "Numerical",
                 fill: false,
             }, {
@@ -181,6 +206,10 @@ function initChart(g, Numerical, Exact) {
             },
             scales: {
                 xAxes: [{
+                    gridLines: {
+                        color: "#323232",
+                        zeroLineColor: "#666666"
+                    },
                     type: "linear",
                     position: "bottom",
                     ticks: {
@@ -189,6 +218,10 @@ function initChart(g, Numerical, Exact) {
                     }
                 }],
                 yAxes: [{
+                    gridLines: {
+                        color: "#323232",
+                        zeroLineColor: "#666666"
+                    },
                     type: "linear",
                     ticks: {
                         maxRotation: 0,
@@ -275,8 +308,17 @@ function rescaleChart(chart, elem, L, R, T, B, d = 1) {
 
 init(f, x0, y0, x1, h);
 
-graph.style.height = (0.89 * window.innerHeight).toString() + "px";
+graph.style.height = (0.97 * window.innerHeight).toString() + "px";
 
 window.onresize = () => {
-    graph.style.height = (0.89 * window.innerHeight).toString() + "px";
+    graph.style.height = (0.97 * window.innerHeight).toString() + "px";
+};
+
+document.getElementById("h").onwheel = (elem) => {
+    h = Number(document.getElementById("h").value) + elem.deltaY / 900;
+    if (h > 1) h = 1;
+    if (h < 0.0001) h = 0.001;
+
+    document.getElementById("h").value = h;
+    redraw();
 };
