@@ -1,15 +1,16 @@
-let graph = document.getElementById("chart");
+let method = "euler";
+let deltas = [0, 11 / 3];
+let x0 = 1, x1 = 5, y0 = 0.5, h = 0.01;
 
 let chart, xAxis, yAxis, yExact;
-let x0 = 1, x1 = 5, y0 = 0.5, h = 0.01;
-let method = "euler";
+let graph = document.getElementById("chart");
 
 function f(x, y) {
-    return (x ** 3) * (y ** 4) - y / x;
+    return y ** 4 * x ** 3 - y / x;
 }
 
 function exact(x) {
-    return 1 / x * Math.pow(11 - 3 * x, -1/3);
+    return 1 / Math.cbrt(11 * x ** 3 - 3 * x ** 4);
 }
 
 function onDeltaChange(val) {
@@ -62,27 +63,45 @@ function defineX(from, to, delta) {
 }
 
 function defineY(funct, y0, xAxis, delta) {
+    let ans;
     let arr = [y0];
     let count = Math.round((xAxis[xAxis.length - 1] - xAxis[0]) / delta);
 
     if (method === "euler") {
         for (let i = 1; i <= count; ++i) {
-            arr.push(arr[i - 1] + delta * funct(xAxis[i - 1], arr[i - 1]));
+            if (Math.abs(xAxis[i - 1] - deltas[1]) <= delta || Math.abs(xAxis[i - 1] - deltas[0]) <= 2 * delta) {
+                ans = exact(xAxis[i]);
+            } else
+                ans = ans = arr[i - 1] + delta * funct(xAxis[i - 1], arr[i - 1]);
+
+            arr.push(ans);
         }
     }
     else if (method === "improvedEuler") {
         for (let i = 1; i <= count; ++i) {
-            let k1 = funct(xAxis[i - 1], arr[i - 1]);
-            arr.push(arr[i - 1] + delta / 2 * (k1 + funct(xAxis[i - 1], arr[i - 1] + delta * k1)));
+            if (Math.abs(xAxis[i - 1] - deltas[1]) <= delta || Math.abs(xAxis[i - 1] - deltas[0]) <= 2 * delta) {
+                ans = exact(xAxis[i]);
+            } else {
+                let k1 = funct(xAxis[i - 1], arr[i - 1]);
+                ans = arr[i - 1] + delta / 2 * (k1 + funct(xAxis[i - 1], arr[i - 1] + delta * k1));
+            }
+
+            arr.push(ans);
         }
     }
     else {
         for (let i = 1; i <= count; ++i) {
-            let k1 = funct(xAxis[i - 1], arr[i - 1]);
-            let k2 = funct(xAxis[i - 1] + delta / 2, arr[i - 1] + delta / 2 * k1);
-            let k3 = funct(xAxis[i - 1] + delta / 2, arr[i - 1] + delta / 2 * k2);
-            let k4 = funct(xAxis[i - 1] + delta, arr[i - 1] + delta * k3);
-            arr.push(arr[i - 1] + delta / 6 * (k1 + 2 * k2 + 2 * k3 + k4));
+            if (Math.abs(xAxis[i - 1] - deltas[1]) <= delta || Math.abs(xAxis[i - 1] - deltas[0]) <= 2 * delta) {
+                ans = exact(xAxis[i]);
+            } else {
+                let k1 = funct(xAxis[i - 1], arr[i - 1]);
+                let k2 = funct(xAxis[i - 1] + delta / 2, arr[i - 1] + delta / 2 * k1);
+                let k3 = funct(xAxis[i - 1] + delta / 2, arr[i - 1] + delta / 2 * k2);
+                let k4 = funct(xAxis[i - 1] + delta, arr[i - 1] + delta * k3);
+                ans = arr[i - 1] + delta / 6 * (k1 + 2 * k2 + 2 * k3 + k4);
+            }
+
+            arr.push(ans);
         }
     }
 
@@ -104,6 +123,7 @@ function init(funct, x0, y0, x1, h) {
     }
     let Numerical = [];
     let Exact = [];
+
     xAxis.forEach(function(value, index) {
         Numerical.push({x: value, y: yAxis[index]});
         Exact.push({x: value, y: yExact[index]});
@@ -116,16 +136,9 @@ function init(funct, x0, y0, x1, h) {
     // });
 
     chart = initChart(graph, Numerical, Exact);
+    chart.options.scales.yAxes[0].ticks.min = -1.5;
+    chart.options.scales.yAxes[0].ticks.max = 1.5;
 }
-
-init(f, x0, y0, x1, h);
-
-graph.style.height = (0.89 * window.innerHeight).toString() + "px";
-
-window.onresize = () => {
-    graph.style.height = (0.89 * window.innerHeight).toString() + "px";
-};
-
 
 function initChart(g, Numerical, Exact) {
     chart = new Chart(g, {
@@ -209,18 +222,15 @@ function initChart(g, Numerical, Exact) {
         let prevY = a.clientY;
 
         g.onmousemove = (elem) => {
+            let width = (chart.chartArea.right - chart.chartArea.left);
+            let height = (chart.chartArea.bottom - chart.chartArea.top);
             let currX = elem.clientX;
             let currY = elem.clientY;
 
-            // Magical constant
-            let k = 1.000004;
+            let L = (currX - prevX) / width;
+            let T = (currY - prevY) / height;
 
-            let L = Math.sqrt(k) * (elem.clientX - prevX);
-            let R = L;
-            let T = Math.sqrt(k) * (elem.clientY - prevY);
-            let B = T;
-
-            rescaleChart(chart, elem, -L, R, -T, B, 0.001);
+            rescaleChart(chart, elem, -L, L, -T, T);
             prevX = currX;
             prevY = currY;
         };
@@ -233,7 +243,7 @@ function initChart(g, Numerical, Exact) {
     return chart;
 }
 
-function rescaleChart(chart, elem, L, R, T, B, d) {
+function rescaleChart(chart, elem, L, R, T, B, d = 1) {
 
     let dF = 1, dR = 1;
     let yMin = chart.scales["y-axis-0"].min;
@@ -241,7 +251,7 @@ function rescaleChart(chart, elem, L, R, T, B, d) {
     let xMin = chart.scales["x-axis-0"].min;
     let xMax = chart.scales["x-axis-0"].max;
 
-    if (chart.options.scales.yAxes[0].ticks.min === undefined) {
+    if (chart.options.scales.yAxes[0].ticks.min === undefined || chart.options.scales.xAxes[0].ticks.min === undefined) {
         dF = (yMax - yMin);
         dR = (xMax - xMin);
 
@@ -262,3 +272,11 @@ function rescaleChart(chart, elem, L, R, T, B, d) {
 
     chart.update();
 }
+
+init(f, x0, y0, x1, h);
+
+graph.style.height = (0.89 * window.innerHeight).toString() + "px";
+
+window.onresize = () => {
+    graph.style.height = (0.89 * window.innerHeight).toString() + "px";
+};
