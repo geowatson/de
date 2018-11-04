@@ -16,7 +16,7 @@ The exact solution is (if initials x0 = 1 and y0 = 0.5):
 
 ## 2. Asymptotes
 
-By solving:
+By solving 
 <img src="https://latex.codecogs.com/png.latex?\huge&space;11&space;x^{3}&space;-&space;3&space;x^{4}&space;=&space;0" title="\huge 11 x^{3} - 3 x^{4} = 0" />
 
 We observe that x = 0 and x = 11 / 3 are asymptotes. This is used when computational algo goes to x{k} - x{asymptote} <= eps, it jumps on delta and recomputes value by exact solution to continue computing values after this asymptote.
@@ -48,7 +48,7 @@ P.S. All other stuff (scrolling and dragging on graph, scrolling on **h** and co
 
 ### Project hierarchy
 
-```index.html``` - Page content descriptor (or just HTML file)
-```script.js``` - Dynamic library descriptor (or just JS file)
-```style.css``` - Cascade style sheets (or just CSS file)
-```chart.js``` - JS file, provided by <a href="https://www.chartjs.org">Chart.JS</a>
+* ```index.html``` - Page content descriptor (or just HTML file)
+* ```script.js``` - Dynamic library descriptor (or just JS file)
+* ```style.css``` - Cascade style sheets (or just CSS file)
+* ```chart.js``` - JS file, provided by <a href="https://www.chartjs.org">Chart.JS</a>
