@@ -28,7 +28,7 @@ function onMethodChange(val) {
     redraw(plot);
 }
 
-document.getElementById("switcher").onclick = (elem) => {
+document.getElementById("switcher").onclick = () => {
     if (plot === "solution") {
         plot = "error";
         document.getElementById("switcher").innerText = "Show Solution Plot";
@@ -58,6 +58,7 @@ function redraw(plot) {
     let Numerical = [];
     let Exact = [];
     let Error = [];
+    let Global = [];
     xAxis.forEach(function(value, index) {
         Numerical.push({x: value, y: yAxis[index]});
         Exact.push({x: value, y: yExact[index]});
@@ -68,9 +69,11 @@ function redraw(plot) {
 
     if (plot === "solution") {
         chart.data.datasets[0].data = Numerical;
-        delete chart.data.datasets[1].hidden;
         chart.data.datasets[1].data = Exact;
         chart.data.datasets[0].label = "Numerical";
+        delete chart.data.datasets[1].hidden;
+        chart.data.datasets[0].label = "Exact";
+        chart.options.title.text = "Solution plot";
     }
     else {
         Error = [];
@@ -80,8 +83,9 @@ function redraw(plot) {
         });
 
         chart.data.datasets[0].data = Error;
+        chart.data.datasets[0].label = "Local";
         chart.data.datasets[1].hidden = "true";
-        chart.data.datasets[0].label = "Error";
+        chart.options.title.text = "Errors plot";
     }
 
     let radius = 0;
@@ -221,8 +225,8 @@ function initChart(g, Numerical, Exact) {
                 display: true,
             },
             title: {
-                display: false,
-                text: 'Interactive editor- solution of y\'=y^4 * x^3 - y / x'
+                display: true,
+                text: 'Solution plot'
             },
             elements: {
                 point: {
@@ -234,6 +238,10 @@ function initChart(g, Numerical, Exact) {
             },
             scales: {
                 xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'x'
+                    },
                     gridLines: {
                         color: "#323232",
                         zeroLineColor: "#666666"
@@ -246,6 +254,10 @@ function initChart(g, Numerical, Exact) {
                     }
                 }],
                 yAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'y'
+                    },
                     gridLines: {
                         color: "#323232",
                         zeroLineColor: "#666666"
