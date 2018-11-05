@@ -33,6 +33,8 @@ You also can switch from error to solution plot.
 
 **!** All values are dynamic, e.g setting **h** and then changing plot to error will show you error plot with from graph with this **h** value.
 
+* __Error plot__ is local truncation error representation.
+
 [![Demo](img.png)](https://geowatson.github.io/de/)
 
 ### Used techs
